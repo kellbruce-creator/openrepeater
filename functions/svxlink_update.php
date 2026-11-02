@@ -169,6 +169,71 @@ switch ($settings['orp_Mode']) {
 		unlink('/etc/openrepeater/svxlink/local-events.d/CustomLogic.tcl'); // Delete custom TCL overrides if they exist
 		$classSVXLink->write_config($advanced['gpio_config'], 'gpio.conf', 'text'); // Overridden GPIO config
         break;
+###############################################
+	# 2 Repeater Setup
+###############################################
+
+    case "repeater2":
+$logicListArray = array();
+		foreach ($ports as $key => $val) {
+			// Build Ports
+			$config_array += $classSVXLink->build_rx($key); // Build RX
+			$config_array += $classSVXLink->build_tx($key); // Build TX
+
+
+			// If there is more than one port, build 1st port as repeater, and additional ports as simplex links
+			if ($key <= 2) {
+				// Build Repeater Logic
+				$new_logic_name = 'ORP_RepeaterLogic_Port' . $key;
+				$new_logic_filename = $new_logic_name . '.tcl';
+	
+				$config_array += $classSVXLink->build_logic_repeater($new_logic_name, $key);
+	
+				$new_event = $classSVXLinkTCL->alias_RepeaterLogic($new_logic_name);
+
+				$new_event = $classSVXLinkTCL->override_courtesy_tone($new_event);
+
+				$classSVXLink->write_config($new_event, $new_logic_filename, 'text');
+				
+				$logicListArray[] = $new_logic_name;
+			
+				
+			} else {
+				// Build Link/Simplex Logic
+				$new_logic_name = 'ORP_SimplexLogic_Port' . $key;
+				$new_logic_filename = $new_logic_name . '.tcl';
+	
+				$config_array += $classSVXLink->build_logic_simplex($new_logic_name, $key);
+	
+				$new_event = $classSVXLinkTCL->alias_SimplexLogic($new_logic_name);
+				$classSVXLink->write_config($new_event, $new_logic_filename, 'text');
+
+				$logicListArray[] = $new_logic_name;
+					
+			}
+			
+		}
+
+
+		
+
+
+		// GLOBAL SETTINGS
+		$config_array['GLOBAL'] += $classSVXLink->build_global();
+
+		// Build GPIO Config
+		$gpioConfigFile = $classSVXLinkGPIO->build_gpio_config();
+
+		# Insert Logic TCL Overrides
+ 		$logicOverride = $classSVXLinkTCL->logic_override();
+
+
+		// WRITE CONFIGURATION & TCL FILES
+		$classSVXLink->write_config($config_array, 'svxlink.conf', 'ini');
+ 		$classSVXLink->write_config($logicOverride, 'Logic.tcl', 'text');
+		$classSVXLink->write_config($gpioConfigFile, 'gpio.conf', 'text');
+
+        break;
 
 }
 
