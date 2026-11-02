@@ -82,6 +82,7 @@ var jsAudioOutputOptions='<?php echo $phpAudioOutputOptions; ?>';
 				<select id="orp_Mode" name="orp_Mode">
 					<option value="repeater"<?php if ($settings['orp_Mode'] == 'repeater') { echo ' selected'; } ?>>1 Repeater + Simplex Links (all ports linked)</option>
 					<option value="simplex"<?php if ($settings['orp_Mode'] == 'simplex') { echo ' selected'; } ?>>Simplex Node</option>
+					<option value="repeater2"<?php if ($settings['orp_Mode'] == 'repeater2') { echo ' selected'; } ?>>2 Repeater / independant</option>
 				</select>
 				<label class="control-label" for="orp_Mode">Logic Mode for Port(s)</label>
 			</form>
